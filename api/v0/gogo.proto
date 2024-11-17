@@ -1,0 +1,14 @@
+syntax = "proto3";
+option go_package = "github.com/sicozz/gogo/gogo/v0.0/gogo";
+
+service Greeter {
+    rpc Greet (GreetReq) returns (GreetRes);
+}
+
+message GreetReq {
+    string name = 1;
+}
+
+message GreetRes {
+    string greeting = 1;
+}
