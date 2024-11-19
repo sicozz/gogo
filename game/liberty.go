@@ -1,28 +1,31 @@
 package game
 
-type Liberty struct{}
+type liberty struct{}
 
-type Direction uint8
+type direction int
 
 const (
-	Up Direction = iota
-	Down
-	Left
-	Right
+	up direction = iota
+	down
+	left
+	right
 )
 
-func NewLiberty() Liberty {
-	return Liberty{}
+func newLiberty() liberty {
+	return liberty{}
 }
 
-func Origin(l Liberty) Position {
-	return Position{}
+// UNIMPLEMENTED
+func Origin(l liberty) position {
+	return position{}
 }
 
-func End(l Liberty) Position {
-	return Position{}
+// UNIMPLEMENTED
+func End(l liberty) position {
+	return position{}
 }
 
-func GetDirection(l Liberty) Direction {
-	return Up
+// UNIMPLEMENTED
+func GetDirection(l liberty) direction {
+	return up
 }

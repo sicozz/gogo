@@ -1,19 +1,22 @@
 package game
 
-type Group struct{}
+type group struct{}
 
-func NewGroup() *Group {
-	return &Group{}
+func newGroup() *group {
+	return &group{}
 }
 
-func GroupPositions(g *Group) []Position {
-	return make([]Position, 0)
+// UNIMPLEMENTED
+func GroupTerritory(g *group) []position {
+	return make([]position, 0)
 }
 
-func GroupLiberties(g *Group) (liberties []Liberty, count uint) {
-	return make([]Liberty, 0), 0
+// UNIMPLEMENTED
+func GroupLiberties(g *group) (liberties []liberty, count int) {
+	return make([]liberty, 0), 0
 }
 
-func GroupArea(g *Group) []Position {
-	return make([]Position, 0)
+// UNIMPLEMENTED
+func GroupArea(g *group) []position {
+	return make([]position, 0)
 }

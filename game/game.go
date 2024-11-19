@@ -1,67 +1,88 @@
 package game
 
-type Game struct{}
-
-type GameState struct{}
-
-type PID uint
-
-type Action uint
+const (
+	GovNeutral governance = iota
+	GovBlack
+	GovWhite
+)
 
 const (
-	ClaimPosition Action = iota
+	ClaimPos action = iota
 	Pass
 	Resign
 )
 
-func NewGame() *Game {
-	return &Game{}
+type GameEngine struct{}
+
+type GameState struct{}
+
+type action int
+
+type governance int
+
+func NewGameEngine() *GameEngine {
+	return &GameEngine{}
 }
 
-func Players(g *Game) []PID {
-	return make([]PID, 0)
+// UNIMPLEMENTED
+func Players(g *GameEngine) *GameEngine {
+	return nil
 }
 
-func InitHandicap(g *Game) uint {
+// UNIMPLEMENTED
+func InitHandicap(g *GameEngine) int {
 	return 0
 }
 
-func ContinuousPasses(g *Game) uint {
+// UNIMPLEMENTED
+func ContinuousPasses(g *GameEngine) int {
 	return 0
 }
 
-func History(g *Game) []GameState {
+// UNIMPLEMENTED
+func History(g *GameEngine) []GameState {
 	return make([]GameState, 0)
 }
 
+// UNIMPLEMENTED
 func NewGameState() *GameState {
 	return &GameState{}
 }
 
-func GetBoard(gst *GameState) *Board {
-	return &Board{}
+// UNIMPLEMENTED
+func NextState(gst *GameState) *GameState {
+	return nil
 }
 
-func Handicap(gst *GameState) uint {
-	return 0
-}
-
-func PlayerScore(gst *GameState, pID PID) uint {
-	return 0
-}
-
-func TurnPlayer(gst *GameState) PID {
-	return PID(0)
-}
-
+// UNIMPLEMENTED
 func TurnEvents(gst *GameState) map[string]string {
 	return make(map[string]string)
 }
 
-func GetAction(gst *GameState) *Action {
-	return nil
+// UNIMPLEMENTED
+func PlayerScore(gst *GameState, pID governance) int {
+	return 0
 }
 
-func NextState(gst *GameState) *GameState {
-	return nil
+// UNIMPLEMENTED
+func ActivePlayer(gst *GameState) governance {
+	return governance(0)
+}
+
+// UNIMPLEMENTED
+func Handicap(gst *GameState) int {
+	return 0
+}
+
+func (g governance) string() string {
+	switch g {
+	case GovNeutral:
+		return "+"
+	case GovBlack:
+		return "●"
+	case GovWhite:
+		return "○"
+	default:
+		return "Unknown"
+	}
 }
