@@ -6,6 +6,18 @@ import (
 	"strings"
 )
 
+var (
+    ErrNeutralClaim = errors.New("board: neutral can not claim position")
+    ErrPositionTaken = errors.New("board: position taken")
+)
+
+const (
+    BoardSize9 int = 9
+    BoardSize11 int = 11
+    BoardSize16 int = 16
+    BoardSize19 int = 19
+)
+
 type Board [][]governance
 
 type position struct {
@@ -56,6 +68,9 @@ func ClaimPosition(b Board, p position, g governance) (Board, error) {
 	// [ ] Position not taken
 	// [ ] Suicide rule
 	// [ ] Ko rule
+    if g == GovNeutral {
+        return nil, ErrNeutralClaim
+    }
 
 	err := b.checkIndexSafe(p)
 	if err != nil {
@@ -63,10 +78,14 @@ func ClaimPosition(b Board, p position, g governance) (Board, error) {
 	}
 
 	if isPositionClaimed(b, p) {
-		return nil, fmt.Errorf("Failed to take position. Position [%v, %v] already taken", p.x, p.y)
+        return nil, ErrPositionTaken
 	}
 
 	return b.seize(p, g), nil
+}
+
+func isPositionClaimed(b Board, p position) bool {
+	return b[p.x][p.y] != GovNeutral
 }
 
 func (b Board) seize(p position, g governance) Board {
@@ -75,15 +94,15 @@ func (b Board) seize(p position, g governance) Board {
 	return rB
 }
 
-func isPositionClaimed(b Board, p position) bool {
-	return b[p.x][p.y] != GovNeutral
-}
-
 func (b Board) checkIndexSafe(p position) error {
 	if p.x >= len(b) || p.y >= len(b) {
 		return errors.New("Trying to index out of bound of a board")
 	}
 	return nil
+}
+
+func (b Board) governance(p position) governance {
+    return b[p.x][p.y]
 }
 
 func NewPosition(x, y int) position {

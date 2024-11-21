@@ -12,7 +12,7 @@ const (
 	Resign
 )
 
-type GameEngine struct{}
+type GoMatch struct{}
 
 type GameState struct{}
 
@@ -20,27 +20,27 @@ type action int
 
 type governance int
 
-func NewGameEngine() *GameEngine {
-	return &GameEngine{}
+func NewGameEngine() *GoMatch {
+	return &GoMatch{}
 }
 
 // UNIMPLEMENTED
-func Players(g *GameEngine) *GameEngine {
+func Players(g *GoMatch) *GoMatch {
 	return nil
 }
 
 // UNIMPLEMENTED
-func InitHandicap(g *GameEngine) int {
+func InitHandicap(g *GoMatch) int {
 	return 0
 }
 
 // UNIMPLEMENTED
-func ContinuousPasses(g *GameEngine) int {
+func ContinuousPasses(g *GoMatch) int {
 	return 0
 }
 
 // UNIMPLEMENTED
-func History(g *GameEngine) []GameState {
+func History(g *GoMatch) []GameState {
 	return make([]GameState, 0)
 }
 
