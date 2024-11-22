@@ -20,7 +20,7 @@ type action int
 
 type governance int
 
-func NewGameEngine() *GoMatch {
+func NewGoMatch() *GoMatch {
 	return &GoMatch{}
 }
 

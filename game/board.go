@@ -7,15 +7,15 @@ import (
 )
 
 var (
-    ErrNeutralClaim = errors.New("board: neutral can not claim position")
-    ErrPositionTaken = errors.New("board: position taken")
+	ErrNeutralClaim  = errors.New("board: neutral can not claim position")
+	ErrPositionTaken = errors.New("board: position taken")
 )
 
 const (
-    BoardSize9 int = 9
-    BoardSize11 int = 11
-    BoardSize16 int = 16
-    BoardSize19 int = 19
+	BoardSize9  int = 9
+	BoardSize11 int = 11
+	BoardSize16 int = 16
+	BoardSize19 int = 19
 )
 
 type Board [][]governance
@@ -26,32 +26,27 @@ type position struct {
 }
 
 // UNIMPLEMENTED
-func NeutralArea(b Board) []position {
+func Territory(b Board, g governance) []position {
 	return make([]position, 0)
 }
 
 // UNIMPLEMENTED
-func ClaimedArea(b Board) []position {
+func Area(b Board, g governance) []position {
 	return make([]position, 0)
 }
 
 // UNIMPLEMENTED
-func PlayerTerritory(b Board, g governance) []position {
-	return make([]position, 0)
-}
-
-// UNIMPLEMENTED
-func PlayerArea(b Board, g governance) []position {
-	return make([]position, 0)
-}
-
-// UNIMPLEMENTED
-func PlayerPrisoners(b Board, g governance) int {
-	return 0
-}
-
-// UNIMPLEMENTED
-func PositionLiberties(b Board, p position) (liberties []liberty, count int) {
+func PositionLiberties(b Board, p position) ([]liberty, int) {
+	/*
+	   Algorithm:
+	       For each direction
+	       createa a liberty
+	       check if it is valid (end is inbound)
+	       check liberty end governance
+	           - Neutral: add liberty to response
+	           - Ally piece: extend liberty (DFS search for does ally have any liberty?)
+	           - Enemy piece: dont add liberty
+	*/
 	return make([]liberty, 0), 0
 }
 
@@ -63,14 +58,27 @@ func NewBoard(size int) Board {
 	return b
 }
 
+func Positions(b Board, g governance) []position {
+	size := len(b)
+	positions := make([]position, 0)
+	for i0 := 0; i0 < size; i0++ {
+		for i1 := 0; i1 < size; i1++ {
+			if b[i0][i1] == g {
+				positions = append(positions, NewPosition(i0, i1))
+			}
+		}
+	}
+	return positions
+}
+
 func ClaimPosition(b Board, p position, g governance) (Board, error) {
 	// TODO: Rules
-	// [ ] Position not taken
+	// [x] Position not taken
 	// [ ] Suicide rule
 	// [ ] Ko rule
-    if g == GovNeutral {
-        return nil, ErrNeutralClaim
-    }
+	if g == GovNeutral {
+		return nil, ErrNeutralClaim
+	}
 
 	err := b.checkIndexSafe(p)
 	if err != nil {
@@ -78,7 +86,7 @@ func ClaimPosition(b Board, p position, g governance) (Board, error) {
 	}
 
 	if isPositionClaimed(b, p) {
-        return nil, ErrPositionTaken
+		return nil, ErrPositionTaken
 	}
 
 	return b.seize(p, g), nil
@@ -89,7 +97,12 @@ func isPositionClaimed(b Board, p position) bool {
 }
 
 func (b Board) seize(p position, g governance) Board {
-	rB := NewBoard(len(b))
+	size := len(b)
+	rB := make(Board, size)
+	for i0 := 0; i0 < size; i0++ {
+		rB[i0] = make([]governance, size)
+		copy(rB[i0], b[i0])
+	}
 	rB[p.x][p.y] = g
 	return rB
 }
@@ -102,7 +115,7 @@ func (b Board) checkIndexSafe(p position) error {
 }
 
 func (b Board) governance(p position) governance {
-    return b[p.x][p.y]
+	return b[p.x][p.y]
 }
 
 func NewPosition(x, y int) position {
