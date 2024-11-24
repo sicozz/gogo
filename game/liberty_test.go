@@ -7,7 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestLibertyEnd(t *testing.T) {
+// Test simple end calculation for liberty.
+func TestEnd(t *testing.T) {
 	testNameTemplate := "liberty %v"
 	tests := []struct {
 		origin      position

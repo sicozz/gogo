@@ -1,5 +1,6 @@
 package game
 
+// group represents a group of connected positions on a board.
 type group struct{}
 
 func newGroup() *group {

@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+// liberty represents a liberty in the Go game.
 type liberty struct {
 	origin position
 	dir    direction
@@ -25,12 +26,12 @@ func newLiberty(p position, d direction) liberty {
 	return liberty{origin: p, dir: d}
 }
 
-// UNIMPLEMENTED
+// Origin computes the starting position of the liberty.
 func Origin(l liberty) position {
 	return l.origin
 }
 
-// UNIMPLEMENTED
+// End computes the finishing position of the liberty.
 func End(l liberty) position {
 	switch l.dir {
 	case up:
@@ -47,7 +48,6 @@ func End(l liberty) position {
 	}
 }
 
-// UNIMPLEMENTED
 func GetDirection(l liberty) direction {
 	return up
 }

@@ -1,3 +1,4 @@
+// game provides a simulation engine for a Go match.
 package game
 
 const (
@@ -12,12 +13,15 @@ const (
 	Resign
 )
 
+// GoMatch manages the lifecycle of a Go game.
 type GoMatch struct{}
 
 type GameState struct{}
 
+// action represents the options a player can take on his turn.
 type action int
 
+// governance represents the ownership state for a position.
 type governance int
 
 func NewGoMatch() *GoMatch {

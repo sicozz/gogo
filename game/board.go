@@ -18,8 +18,10 @@ const (
 	BoardSize19 int = 19
 )
 
+// Board represents the current governance of all positions on a Go board.
 type Board [][]governance
 
+// position represents a position on a coordinate system.
 type position struct {
 	x int
 	y int
@@ -50,6 +52,7 @@ func PositionLiberties(b Board, p position) ([]liberty, int) {
 	return make([]liberty, 0), 0
 }
 
+// NewBoard creates an empty board of size by size.
 func NewBoard(size int) Board {
 	b := make(Board, size)
 	for i0 := 0; i0 < size; i0++ {
@@ -58,6 +61,7 @@ func NewBoard(size int) Board {
 	return b
 }
 
+// Positions retrieves the positions on a board matching a certain governance.
 func Positions(b Board, g governance) []position {
 	size := len(b)
 	positions := make([]position, 0)
@@ -71,6 +75,7 @@ func Positions(b Board, g governance) []position {
 	return positions
 }
 
+// ClaimPosition computes the next board by claiming a position for a governance.
 func ClaimPosition(b Board, p position, g governance) (Board, error) {
 	// TODO: Rules
 	// [x] Position not taken
@@ -92,10 +97,12 @@ func ClaimPosition(b Board, p position, g governance) (Board, error) {
 	return b.seize(p, g), nil
 }
 
+// isPositionClaimed checks that a position has a non-neutral governance.
 func isPositionClaimed(b Board, p position) bool {
 	return b[p.x][p.y] != GovNeutral
 }
 
+// seize produces the resulting board of placing a governance on a position on the board.
 func (b Board) seize(p position, g governance) Board {
 	size := len(b)
 	rB := make(Board, size)
@@ -107,6 +114,7 @@ func (b Board) seize(p position, g governance) Board {
 	return rB
 }
 
+// checkIndexSafe checks that a position is inside the bounds of the board.
 func (b Board) checkIndexSafe(p position) error {
 	if p.x >= len(b) || p.y >= len(b) {
 		return errors.New("Trying to index out of bound of a board")
@@ -114,6 +122,7 @@ func (b Board) checkIndexSafe(p position) error {
 	return nil
 }
 
+// governance retrieves the governance for a position on the board.
 func (b Board) governance(p position) governance {
 	return b[p.x][p.y]
 }
@@ -124,6 +133,7 @@ func NewPosition(x, y int) position {
 
 // Utils
 
+// Display shows the governance of a board in a rich and structured format.
 func (b Board) Display() {
 	positionFmt := "[%v]\t"
 	l := len(b)
