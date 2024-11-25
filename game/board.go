@@ -33,6 +33,11 @@ type position struct {
 // positions represents a collection of position
 type positions []position
 
+// BoardBuilder builds a custom board
+type BoardBuilder struct {
+    board Board
+}
+
 // UNIMPLEMENTED
 func Territory(b Board, g governance) positions {
 	return make(positions, 0)
@@ -218,6 +223,21 @@ func (b Board) governance(p position) governance {
 
 func NewPosition(x, y int) position {
 	return position{x, y}
+}
+
+func NewBoardBuilder(size int) *BoardBuilder {
+    return &BoardBuilder{board: NewBoard(size)}
+}
+
+// SetPosition places a governance on builded board
+func (bB *BoardBuilder) SetPosition(p position, g governance) *BoardBuilder {
+    bB.board = bB.board.seize(p, g)
+    return bB
+}
+
+// Build returns the builded board
+func (bB *BoardBuilder) Build() Board {
+    return bB.board
 }
 
 // Utils
