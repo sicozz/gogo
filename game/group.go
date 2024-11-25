@@ -8,8 +8,8 @@ func newGroup() *group {
 }
 
 // UNIMPLEMENTED
-func GroupTerritory(g *group) []position {
-	return make([]position, 0)
+func GroupTerritory(g *group) positions {
+	return make(positions, 0)
 }
 
 // UNIMPLEMENTED
@@ -18,6 +18,6 @@ func GroupLiberties(g *group) (liberties []liberty, count int) {
 }
 
 // UNIMPLEMENTED
-func GroupArea(g *group) []position {
-	return make([]position, 0)
+func GroupArea(g *group) positions {
+	return make(positions, 0)
 }
