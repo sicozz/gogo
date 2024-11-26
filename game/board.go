@@ -30,12 +30,12 @@ type position struct {
 	y int
 }
 
-// positions represents a collection of position
+// positions represents a collection of position.
 type positions []position
 
-// BoardBuilder builds a custom board
+// BoardBuilder builds a custom board.
 type BoardBuilder struct {
-    board Board
+	board Board
 }
 
 // UNIMPLEMENTED
@@ -57,12 +57,13 @@ func NewBoard(size int) Board {
 	return b
 }
 
-// PositionLiberties computes the liberties of a position
+// PositionLiberties computes the liberties of a position on a board.
 func PositionLiberties(b Board, p position) []liberty {
 	g := b.governance(p)
-    if g == GovNeutral {
-        return nil
-    }
+	if g == GovNeutral {
+		return nil
+	}
+
 	libertyCandidateCriteria := func(p0 position) bool {
 		g0 := b.governance(p0)
 		return g0 == g || g0 == GovNeutral
@@ -80,39 +81,40 @@ func PositionLiberties(b Board, p position) []liberty {
 	return liberties
 }
 
-// IsAlive computes the life status for a position
+// IsAlive computes the life status for a position on a board.
+// checks that the position has at least 1 adjacent neutral neighbor or 1 adjacent alive ally.
 func IsAlive(b Board, p position) bool {
-    g := b.governance(p)
-    if g == GovNeutral {
-        return false
-    }
+	g := b.governance(p)
+	if g == GovNeutral {
+		return false
+	}
 
 	neutralCriteria := governanceCriteria(b, GovNeutral)
 	allyCriteria := governanceCriteria(b, g)
 
-    visited := make(map[position]bool)
-    queue := list.New()
-    queue.PushBack(p)
-    visited[p] = true
-    for queue.Len() > 0 {
-        current := queue.Remove(queue.Front()).(position)
-        visited[current] = true
+	visited := make(map[position]bool)
+	queue := list.New()
+	queue.PushBack(p)
+	visited[p] = true
+	for queue.Len() > 0 {
+		current := queue.Remove(queue.Front()).(position)
+		visited[current] = true
 
-        currentNeighbors := b.neighbors(current)
-        if len(currentNeighbors.filter(neutralCriteria)) > 0 {
-        	return true
-        }
+		currentNeighbors := b.neighbors(current)
+		if len(currentNeighbors.filter(neutralCriteria)) > 0 {
+			return true
+		}
 
-	    for _, currentAlly := range currentNeighbors.filter(allyCriteria) {
-            if !visited[currentAlly] {
-                visited[currentAlly] = true
-                queue.PushBack(currentAlly)
-            }
-        }
-    }
+		for _, currentAlly := range currentNeighbors.filter(allyCriteria) {
+			if !visited[currentAlly] {
+				visited[currentAlly] = true
+				queue.PushBack(currentAlly)
+			}
+		}
+	}
 
-    // No adjacent neutral positions or alive allies
-    return false
+	// no adjacent neutral positions or alive allies.
+	return false
 }
 
 // Positions retrieves the positions on a board matching a certain governance.
@@ -151,7 +153,7 @@ func ClaimPosition(b Board, p position, g governance) (Board, error) {
 	return b.seize(p, g), nil
 }
 
-// governanceCriteria creates a function to check if a position governance matches with another one on a board
+// governanceCriteria creates a function to check if a position governance matches with another one on a board.
 func governanceCriteria(b Board, g governance) func(position) bool {
 	return func(p0 position) bool {
 		return b.governance(p0) == g
@@ -160,7 +162,7 @@ func governanceCriteria(b Board, g governance) func(position) bool {
 
 // isPositionClaimed checks that a position has a non-neutral governance.
 func isPositionClaimed(b Board, p position) bool {
-	return b[p.x][p.y] != GovNeutral
+	return b.governance(p) != GovNeutral
 }
 
 // seize produces the resulting board of placing a governance on a position on the board.
@@ -175,7 +177,7 @@ func (b Board) seize(p position, g governance) Board {
 	return rB
 }
 
-// neighbors computes the nearest 4 adjacent positions for the position
+// neighbors computes the immediate adjacent valid positions for a position.
 func (b Board) neighbors(p position) positions {
 	size := len(b)
 	nC := make(positions, 0)
@@ -205,7 +207,12 @@ func (b Board) checkIndexSafe(p position) error {
 	return nil
 }
 
-// filter filters positions by a matching criteria
+// governance retrieves the governance for a position on the board.
+func (b Board) governance(p position) governance {
+	return b[p.x][p.y]
+}
+
+// filter filters positions by a matching criteria.
 func (pS positions) filter(criteria func(position) bool) positions {
 	filtered := make(positions, 0)
 	for _, p := range pS {
@@ -216,28 +223,23 @@ func (pS positions) filter(criteria func(position) bool) positions {
 	return filtered
 }
 
-// governance retrieves the governance for a position on the board.
-func (b Board) governance(p position) governance {
-	return b[p.x][p.y]
-}
-
 func NewPosition(x, y int) position {
 	return position{x, y}
 }
 
 func NewBoardBuilder(size int) *BoardBuilder {
-    return &BoardBuilder{board: NewBoard(size)}
+	return &BoardBuilder{board: NewBoard(size)}
 }
 
-// SetPosition places a governance on builded board
+// SetPosition places a governance on a position on the board.
 func (bB *BoardBuilder) SetPosition(p position, g governance) *BoardBuilder {
-    bB.board = bB.board.seize(p, g)
-    return bB
+	bB.board = bB.board.seize(p, g)
+	return bB
 }
 
-// Build returns the builded board
+// Build returns the builded board.
 func (bB *BoardBuilder) Build() Board {
-    return bB.board
+	return bB.board
 }
 
 // Utils
