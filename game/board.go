@@ -1,6 +1,7 @@
 package game
 
 import (
+	"container/list"
 	"errors"
 	"fmt"
 	"strings"
@@ -9,6 +10,8 @@ import (
 var (
 	ErrNeutralClaim  = errors.New("board: neutral can not claim position")
 	ErrPositionTaken = errors.New("board: position taken")
+	ErrPositionOOB   = errors.New("Trying to index out of bound of a board")
+	ErrPositionNeg   = errors.New("Trying to index at a negative coordinate")
 )
 
 const (
@@ -27,29 +30,22 @@ type position struct {
 	y int
 }
 
-// UNIMPLEMENTED
-func Territory(b Board, g governance) []position {
-	return make([]position, 0)
+// positions represents a collection of position.
+type positions []position
+
+// BoardBuilder builds a custom board.
+type BoardBuilder struct {
+	board Board
 }
 
 // UNIMPLEMENTED
-func Area(b Board, g governance) []position {
-	return make([]position, 0)
+func Territory(b Board, g governance) positions {
+	return make(positions, 0)
 }
 
 // UNIMPLEMENTED
-func PositionLiberties(b Board, p position) ([]liberty, int) {
-	/*
-	   Algorithm:
-	       For each direction
-	       createa a liberty
-	       check if it is valid (end is inbound)
-	       check liberty end governance
-	           - Neutral: add liberty to response
-	           - Ally piece: extend liberty (DFS search for does ally have any liberty?)
-	           - Enemy piece: dont add liberty
-	*/
-	return make([]liberty, 0), 0
+func Area(b Board, g governance) positions {
+	return make(positions, 0)
 }
 
 // NewBoard creates an empty board of size by size.
@@ -61,10 +57,70 @@ func NewBoard(size int) Board {
 	return b
 }
 
+// PositionLiberties computes the liberties of a position on a board.
+func PositionLiberties(b Board, p position) []liberty {
+	g := b.governance(p)
+	if g == GovNeutral {
+		return nil
+	}
+
+	libertyCandidateCriteria := func(p0 position) bool {
+		g0 := b.governance(p0)
+		return g0 == g || g0 == GovNeutral
+	}
+	libertyCandidates := b.neighbors(p).filter(libertyCandidateCriteria)
+	liberties := make([]liberty, 0)
+	for _, lC := range libertyCandidates {
+		if b.governance(lC) == GovNeutral {
+			liberties = append(liberties, newLiberty(lC))
+		}
+		if b.governance(lC) == g && IsAlive(b, lC) {
+			liberties = append(liberties, newLiberty(lC))
+		}
+	}
+	return liberties
+}
+
+// IsAlive computes the life status for a position on a board.
+// checks that the position has at least 1 adjacent neutral neighbor or 1 adjacent alive ally.
+func IsAlive(b Board, p position) bool {
+	g := b.governance(p)
+	if g == GovNeutral {
+		return false
+	}
+
+	neutralCriteria := governanceCriteria(b, GovNeutral)
+	allyCriteria := governanceCriteria(b, g)
+
+	visited := make(map[position]bool)
+	queue := list.New()
+	queue.PushBack(p)
+	visited[p] = true
+	for queue.Len() > 0 {
+		current := queue.Remove(queue.Front()).(position)
+		visited[current] = true
+
+		currentNeighbors := b.neighbors(current)
+		if len(currentNeighbors.filter(neutralCriteria)) > 0 {
+			return true
+		}
+
+		for _, currentAlly := range currentNeighbors.filter(allyCriteria) {
+			if !visited[currentAlly] {
+				visited[currentAlly] = true
+				queue.PushBack(currentAlly)
+			}
+		}
+	}
+
+	// no adjacent neutral positions or alive allies.
+	return false
+}
+
 // Positions retrieves the positions on a board matching a certain governance.
-func Positions(b Board, g governance) []position {
+func Positions(b Board, g governance) positions {
 	size := len(b)
-	positions := make([]position, 0)
+	positions := make(positions, 0)
 	for i0 := 0; i0 < size; i0++ {
 		for i1 := 0; i1 < size; i1++ {
 			if b[i0][i1] == g {
@@ -97,9 +153,16 @@ func ClaimPosition(b Board, p position, g governance) (Board, error) {
 	return b.seize(p, g), nil
 }
 
+// governanceCriteria creates a function to check if a position governance matches with another one on a board.
+func governanceCriteria(b Board, g governance) func(position) bool {
+	return func(p0 position) bool {
+		return b.governance(p0) == g
+	}
+}
+
 // isPositionClaimed checks that a position has a non-neutral governance.
 func isPositionClaimed(b Board, p position) bool {
-	return b[p.x][p.y] != GovNeutral
+	return b.governance(p) != GovNeutral
 }
 
 // seize produces the resulting board of placing a governance on a position on the board.
@@ -114,10 +177,32 @@ func (b Board) seize(p position, g governance) Board {
 	return rB
 }
 
+// neighbors computes the immediate adjacent valid positions for a position.
+func (b Board) neighbors(p position) positions {
+	size := len(b)
+	nC := make(positions, 0)
+	if p.x+1 < size {
+		nC = append(nC, position{x: p.x + 1, y: p.y})
+	}
+	if p.x > 0 {
+		nC = append(nC, position{x: p.x - 1, y: p.y})
+	}
+	if p.y+1 < size {
+		nC = append(nC, position{x: p.x, y: p.y + 1})
+	}
+	if p.y > 0 {
+		nC = append(nC, position{x: p.x, y: p.y - 1})
+	}
+	return nC
+}
+
 // checkIndexSafe checks that a position is inside the bounds of the board.
 func (b Board) checkIndexSafe(p position) error {
+	if p.x < 0 || p.y < 0 {
+		return ErrPositionNeg
+	}
 	if p.x >= len(b) || p.y >= len(b) {
-		return errors.New("Trying to index out of bound of a board")
+		return ErrPositionOOB
 	}
 	return nil
 }
@@ -127,8 +212,34 @@ func (b Board) governance(p position) governance {
 	return b[p.x][p.y]
 }
 
+// filter filters positions by a matching criteria.
+func (pS positions) filter(criteria func(position) bool) positions {
+	filtered := make(positions, 0)
+	for _, p := range pS {
+		if criteria(p) {
+			filtered = append(filtered, p)
+		}
+	}
+	return filtered
+}
+
 func NewPosition(x, y int) position {
 	return position{x, y}
+}
+
+func NewBoardBuilder(size int) *BoardBuilder {
+	return &BoardBuilder{board: NewBoard(size)}
+}
+
+// SetPosition places a governance on a position on the board.
+func (bB *BoardBuilder) SetPosition(p position, g governance) *BoardBuilder {
+	bB.board = bB.board.seize(p, g)
+	return bB
+}
+
+// Build returns the builded board.
+func (bB *BoardBuilder) Build() Board {
+	return bB.board
 }
 
 // Utils
@@ -145,13 +256,13 @@ func (b Board) Display() {
 	}
 	fmt.Println(header.String())
 
-	for i0 := 0; i0 < l; i0++ {
+	for row := 0; row < l; row++ {
 		var line strings.Builder
-		for i1 := 0; i1 < l; i1++ {
-			if i1 == 0 {
-				line.WriteString(fmt.Sprintf(positionFmt, i0))
+		for col := 0; col < l; col++ {
+			if col == 0 {
+				line.WriteString(fmt.Sprintf(positionFmt, row))
 			}
-			line.WriteString(fmt.Sprintf(positionFmt, b[i0][i1].string()))
+			line.WriteString(fmt.Sprintf(positionFmt, b[col][row].string()))
 		}
 		fmt.Println(line.String())
 	}
